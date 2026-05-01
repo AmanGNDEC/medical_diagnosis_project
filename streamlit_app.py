@@ -42,47 +42,36 @@ st.set_page_config(
 )
 
 # ════════════════════════════════════════════════════════════════════════════
-#  CUSTOM CSS  (dark medical theme)
+#  CUSTOM CSS
+#  IMPORTANT: Only style custom HTML components (cards, badges).
+#  Do NOT override Streamlit native element colors (label, div, span, etc.)
+#  as it breaks checkbox/widget visibility.
+#  Dark theme colors come from .streamlit/config.toml instead.
 # ════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-  /* Dark base */
-  [data-testid="stAppViewContainer"] { background: #0d1117; }
-  [data-testid="stSidebar"]          { background: #161b22; border-right: 1px solid #30363d; }
-  [data-testid="stHeader"]           { background: #161b22; border-bottom: 1px solid #30363d; }
-
-  /* Text */
-  h1,h2,h3,h4,p,div,label,span { color: #e6edf3 !important; }
-
-  /* Metric cards */
-  [data-testid="metric-container"] {
-    background: #1c2128; border: 1px solid #30363d;
-    border-radius: 10px; padding: 12px !important;
-  }
-
-  /* Sidebar inputs */
-  .stSelectbox label, .stNumberInput label, .stCheckbox label { color: #8b949e !important; }
-
-  /* Divider */
-  hr { border-color: #30363d; }
-
-  /* Disclaimer */
-  .disclaimer {
-    background: #1c2128; border: 1px solid #d29922;
-    border-radius: 8px; padding: 10px 16px;
-    font-size: 0.82rem; color: #d29922 !important;
-    margin-top: 20px;
-  }
-
-  /* Disease card */
   .disease-card {
-    background: #1c2128; border: 1px solid #30363d;
-    border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+    background: rgba(88,166,255,0.06);
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
   }
   .rank-badge {
-    display: inline-block; padding: 3px 10px;
-    border-radius: 5px; font-weight: 700; font-size: 0.9rem;
-    color: #fff; margin-right: 10px;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    margin-right: 10px;
+  }
+  .disclaimer {
+    border: 1px solid #d29922;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    margin-top: 20px;
   }
 </style>
 """, unsafe_allow_html=True)
@@ -156,6 +145,8 @@ def confidence_color(prob: float) -> str:
 with st.sidebar:
     st.markdown("## 🏥 AI Medical Diagnosis")
     st.markdown(f"**Model Accuracy:** `{TEST_ACCURACY*100:.1f}%`")
+    st.markdown(f"**Total Symptoms:** `{len(SYMPTOM_COLS)}`")
+    st.markdown(f"**Total Diseases:** `35`")
     st.divider()
 
     # Patient info
@@ -170,7 +161,8 @@ with st.sidebar:
 
     # Symptom search + checklist
     st.markdown("### ☑ Select Symptoms")
-    search = st.text_input("🔍 Search symptoms…", placeholder="Type to filter")
+    st.caption(f"Showing {len(SYMPTOM_COLS)} symptoms — use search to filter")
+    search = st.text_input("🔍 Search symptoms…", placeholder="e.g. pelvic pain, acne")
 
     filtered = [s for s in SYMPTOM_COLS if search.lower() in s.lower()] \
                if search else SYMPTOM_COLS
@@ -191,6 +183,10 @@ with st.sidebar:
             st.session_state.selections.discard(sym)
 
     st.divider()
+
+    # Show selected count
+    if selected_symptoms:
+        st.success(f"✅ {len(selected_symptoms)} symptom(s) selected")
 
     # Buttons
     col1, col2 = st.columns(2)
@@ -302,14 +298,7 @@ if "last_results" in st.session_state:
 
 else:
     # Empty state
-    st.markdown("""
-    <div style="text-align:center; padding: 80px 0; color: #8b949e;">
-      <div style="font-size: 5rem;">🩺</div>
-      <div style="font-size: 1.1rem; margin-top: 16px;">
-        Select symptoms in the left panel<br>and press <strong style="color:#58a6ff">DIAGNOSE</strong>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.info("👈 Select symptoms in the left sidebar and press **DIAGNOSE**")
 
 # ── Disclaimer ────────────────────────────────────────────────────────────
 st.markdown("""
