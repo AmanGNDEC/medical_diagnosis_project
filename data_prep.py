@@ -95,17 +95,18 @@ def inspect_dataset(df: pd.DataFrame) -> None:
 def build_feature_matrix(df: pd.DataFrame):
     """
     ML concept: Feature Engineering
-    ────────────────────────────────
+    ────────────────────────────
     We already have a binary matrix (1/0) from the CSV.
     X = symptom columns (features)
     y = Disease labels  (target)
 
-    Naive Bayes works well with binary features because it models
-    P(symptom_i = 1 | disease) independently for each symptom.
+    NOTE: We use .to_numpy() instead of .values to guarantee a plain
+    NumPy ndarray on ALL pandas versions (including 2.x with PyArrow
+    backend used on Streamlit Cloud / Python 3.12+).
     """
     symptom_cols = [c for c in df.columns if c != "Disease"]
-    X = df[symptom_cols].values.astype(np.float64)   # shape: (n_samples, n_symptoms)
-    y = df["Disease"].values                          # shape: (n_samples,)
+    X = df[symptom_cols].to_numpy().astype(np.float64)  # always a numpy ndarray
+    y = df["Disease"].to_numpy(dtype=str)               # always a numpy ndarray
     return X, y, symptom_cols
 
 
